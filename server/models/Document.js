@@ -59,6 +59,5 @@ const documentSchema = new mongoose.Schema({
 
 // Index for quick lookups
 documentSchema.index({ owner: 1, status: 1 });
-documentSchema.index({ shareToken: 1 });
 
 module.exports = mongoose.model('Document', documentSchema);
