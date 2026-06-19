@@ -2,15 +2,30 @@ const nodemailer = require('nodemailer');
 
 const createTransporter = () => {
   const port = parseInt(process.env.EMAIL_PORT) || 587;
-  return nodemailer.createTransport({
+  
+  const config = {
     host: process.env.EMAIL_HOST,
     port: port,
-    secure: port === 465, // true for 465 (SSL), false for other ports (STARTTLS)
+    secure: port === 465,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    }
-  });
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000 // 10 seconds
+  };
+
+  // If host is Gmail, using Nodemailer's built-in service preset is much more reliable
+  if (process.env.EMAIL_HOST && process.env.EMAIL_HOST.includes('gmail')) {
+    delete config.host;
+    delete config.port;
+    delete config.secure;
+    config.service = 'gmail';
+  }
+
+  return nodemailer.createTransport(config);
 };
 
 /**
