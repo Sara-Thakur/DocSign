@@ -25,7 +25,25 @@ if (!fs.existsSync(signedDir)) fs.mkdirSync(signedDir, { recursive: true });
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ].map(url => url ? url.replace(/\/$/, '') : '');
+
+    const sanitizedOrigin = origin.replace(/\/$/, '');
+    const isAllowed = allowedOrigins.includes(sanitizedOrigin) || 
+                      sanitizedOrigin.endsWith('.vercel.app');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
